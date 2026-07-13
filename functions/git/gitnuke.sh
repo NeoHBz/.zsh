@@ -1,7 +1,10 @@
 function gitnuke() {
-  # Get the name of the current branch
   local current_branch=$(git rev-parse --abbrev-ref HEAD)
-  # Delete all branches except the current branch, main, and dev
-  # WARNING: THIS IS FATAL AND NON-REVERSIBLE, DATA LOSS IS POSSIBLE
-  git branch | grep -v 'dev\|main\|'"$current_branch" | xargs git branch -D
+
+  if ! gum confirm "Delete all branches except $current_branch, main, dev, and development?"; then
+    echo "Cancelled."
+    return 1
+  fi
+
+  git branch | grep -v 'development\|dev\|main\|'"$current_branch" | xargs git branch -D
 }

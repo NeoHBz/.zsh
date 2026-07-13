@@ -15,5 +15,9 @@ alias coder="code-remote"
 alias ws="cd ~/Workspace"
 alias rcp="rsync -avhtP --inplace"
 alias balatro="~/Library/Application\ Support/Steam/steamapps/common/balatro/run_lovely.sh"
-alias code="code-insiders"
 alias getip="whoami ; echo -e \ - Public facing IP Address: ; curl ipecho.net/plain ; echo ; echo -e \ - Internal IP Address: ;  ipconfig getifaddr en0"
+sshcopy() {
+	local host="$1"
+	local path="$2"
+	/usr/bin/ssh "$host" "cat \"$path\"" | /usr/bin/pbcopy
+}
