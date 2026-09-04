@@ -1,7 +1,7 @@
 function gcm () {
-  if git show-ref --verify --quiet refs/heads/master; then
-    git checkout master
-  else
+  if git show-ref --verify --quiet refs/heads/main; then
     git checkout main
+  else
+    git checkout master
   fi
 }
