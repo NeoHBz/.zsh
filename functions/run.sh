@@ -46,6 +46,43 @@ run() {
     esac
   fi
 
+  # If file_arg was given but isn't an existing file, check package.json scripts
+  # for a keyword match (e.g. `run usb` matches a script named "usb-dev")
+  if [ -n "$file_arg" ] && [ -z "$choice" ] && [ -f "package.json" ]; then
+    local jq_out
+    jq_out=$(jq -r --arg kw "$file_arg" \
+      '.scripts // {} | keys[] | select((. | ascii_downcase) | contains($kw | ascii_downcase))' \
+      package.json 2>/dev/null)
+
+    if [ -n "$jq_out" ]; then
+      local -a script_matches
+      script_matches=("${(@f)jq_out}")
+      local chosen_script=""
+
+      if [ "${#script_matches[@]}" -eq 1 ]; then
+        chosen_script="${script_matches[1]}"
+      elif command -v gum &>/dev/null; then
+        chosen_script=$(gum choose "${script_matches[@]}")
+      else
+        echo "Multiple matching scripts found for '$file_arg':"
+        local i=1 s
+        for s in "${script_matches[@]}"; do
+          echo "  $i) $s"
+          i=$((i + 1))
+        done
+        printf "Select a script number: "
+        local sel
+        read -r sel
+        chosen_script="${script_matches[$sel]}"
+      fi
+
+      if [ -n "$chosen_script" ]; then
+        eval "$package_manager run $chosen_script"
+        return 0
+      fi
+    fi
+  fi
+
   # Determine which configuration to use if not already set
   if [ -z "$choice" ]; then
     # Check for ecosystem config files
